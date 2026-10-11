@@ -3,7 +3,7 @@ const V={client:null,mic:null,screen:null,connected:false,connecting:false,muted
 function renderVoice(){
  const configured=!!S.room?.voiceConfigured&&!LOCAL;
  $('joinVoice').classList.toggle('hidden',V.connected);$('joinVoice').disabled=V.connecting||!configured;
- $('joinVoice').textContent=V.connecting?'Menyambung…':configured?'🎧 Sambung suara':'🎧 Suara belum ditetapkan';
+ $('joinVoice').textContent=V.connecting?'Menyambung…':configured?'🎧 Sambung suara':'🎧 Suara belum tersedia';
  $('leaveVoice').classList.toggle('hidden',!V.connected);$('toggleMic').disabled=!V.connected||V.busy||(S.role==='student'&&S.room?.micsLocked);
  $('toggleMic').textContent=!V.muted?'🎙 Mikrofon hidup':S.role==='student'&&S.room?.micsLocked?'🔒 Mikrofon dikunci':'🎙 Mikrofon tutup';
  $('toggleMic').classList.toggle('active',!V.muted);
@@ -15,7 +15,7 @@ function renderVoice(){
 async function connectVoice(){
  if(V.connected||V.connecting||!S.room)return;
  if(LOCAL){toast('Pratonton tidak mempunyai suara sebenar.');return;}
- if(!window.AgoraRTC){toast('Agora SDK tidak dimuatkan. Semak folder vendor dan rangkaian.');return;}
+ if(!window.AgoraRTC){toast('Suara tidak dapat dimuatkan. Semak internet dan muat semula halaman.');return;}
  if(!window.isSecureContext){toast('Mikrofon memerlukan halaman HTTPS. Gunakan pautan GitHub Pages.');return;}
  const epoch=++V.epoch;V.connecting=true;V.error='';renderVoice();
  try{
@@ -42,7 +42,7 @@ async function connectVoice(){
  finally{if(epoch===V.epoch){V.connecting=false;renderVoice();}}
 }
 function voiceError(e){const t=String(e.message||e);if(/NOT_ALLOWED|PERMISSION|NotAllowedError/i.test(t))return 'Akses mikrofon ditolak. Benarkan mikrofon untuk laman ini dalam pelayar.';
- if(/INVALID_TOKEN|TOKEN_EXPIRED|INVALID_APP_ID/i.test(t))return 'Tetapan atau token Agora tidak diterima. Semak App ID, App Certificate dan deployment backend.';
+ if(/INVALID_TOKEN|TOKEN_EXPIRED|INVALID_APP_ID/i.test(t))return 'Sambungan suara tidak dapat disahkan. Hubungi pengendali kelas.';
  return t;}
 async function renewVoiceToken(){if(!V.client||V.renewing)return;V.renewing=true;try{const token=await request('voiceToken');if(V.client){await V.client.renewToken(token.token);V.expires=token.expires;}}finally{V.renewing=false;}}
 async function muteMicrophone(mute){if(V.busy)return;V.busy=true;renderVoice();

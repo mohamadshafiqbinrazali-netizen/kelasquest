@@ -20,9 +20,9 @@ dialog{border:1px solid #555774;border-radius:20px;background:#1b1e34;color:var(
 </style>
 </head>
 <body>
-<div id="demoBanner" class="hidden">PRATONTON TEMPATAN · Data contoh sahaja. Untuk kelas bersama murid, pasang backend Apps Script dan tetapkan config.js untuk kelas sebenar.</div>
+<div id="demoBanner" class="hidden">PRATONTON TEMPATAN · Data contoh sahaja. Gunakan pautan portal untuk menyertai kelas sebenar.</div>
 <section id="entry" class="entry">
- <header class="entry-header row between"><div class="brand"><span class="brandmark">Q</span>KelasQuest</div><button id="connectionBtn" class="small">Sambungan backend</button></header>
+ <header class="entry-header row between"><div class="brand"><span class="brandmark">Q</span>KelasQuest</div></header>
  <div class="hero">
   <div><div class="eyebrow">MASUK KELAS. JADI SEBAHAGIAN CERITA.</div><h1>Kelas kita.<br>Dunia <em>baharu.</em></h1><p>Jumpa cikgu dan kawan-kawan di kelas digital. Gerakkan karakter, angkat tangan dan terokai tugasan bersama.</p>
    <div class="feature-row"><span>Karakter sendiri</span><span>Belajar bersama</span><span>Tugasan digital</span></div>
@@ -38,7 +38,7 @@ dialog{border:1px solid #555774;border-radius:20px;background:#1b1e34;color:var(
    </form>
    <form id="loginForm" class="stack hidden"><div><h2 class="form-title">Ruang guru</h2><small>Cipta kelas dan bimbing murid dari satu tempat.</small></div>
     <label>Email superadmin<input id="teacherEmail" type="email" maxlength="150" placeholder="Email akaun yang menjalankan setup" required autocomplete="username"></label><label>PIN / kata laluan<input id="teacherKey" type="password" maxlength="100" placeholder="PIN superadmin" required autocomplete="current-password"></label>
-    <button class="primary" type="submit">Buka panel guru →</button><p class="hint">Akaun yang menjalankan setupSystem ialah superadmin. Gunakan PIN awal yang diberikan dalam panduan; tukar PIN melalui Tetapan.</p>
+    <button class="primary" type="submit">Buka panel guru →</button><p class="hint">Gunakan email dan PIN akaun guru yang diberikan oleh pengendali portal.</p>
    </form><p id="entryError" class="error" role="alert" style="font-size:12px;margin:12px 0 0"></p><button id="demoBtn" class="hidden small" style="margin-top:16px;width:100%">Cuba pratonton sebagai guru</button>
   </div>
  </div>
@@ -50,7 +50,7 @@ dialog{border:1px solid #555774;border-radius:20px;background:#1b1e34;color:var(
   <label>Tajuk pembelajaran<input id="createTitle" maxlength="80" value="My Beach Holiday" required></label>
   <label>Kelas<input id="createClass" maxlength="40" placeholder="2 Bestari" required></label>
   <label>Nama guru<input id="createTeacher" maxlength="40" value="Cikgu Shafiq" required></label>
-  <small id="voiceConfigNotice">Aktifkan Agora melalui Tetapan untuk suara dalam kelas. Mikrofon peserta bermula dalam keadaan tutup.</small>
+  <small id="voiceConfigNotice">Peserta boleh menyambung suara dalam kelas. Mikrofon bermula dalam keadaan tutup.</small>
   <button class="primary" type="submit">Cipta & masuk kelas →</button><p id="createError" class="error" role="alert"></p>
  </form><div class="card"><div class="row between"><h2 style="margin:0">Sesi kelas</h2><button id="refreshDashboard" class="small">Muat semula</button></div><div class="section-label">KOD AKTIF & REKOD TERKINI</div><div id="sessionList"></div><a id="sheetLink" class="btn" target="_blank" rel="noopener noreferrer" style="width:100%;margin-top:10px">Buka rekod Google Sheet ↗</a><p class="hint" style="margin:14px 0 0">Rekod kehadiran berdasarkan nama yang murid isi. Ia bukan pengesahan identiti atau bukti murid aktif sepanjang sesi.</p></div></div>
 </section>

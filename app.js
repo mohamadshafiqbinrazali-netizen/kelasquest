@@ -9,19 +9,19 @@ function toast(t){$('toast').textContent=t;$('toast').classList.remove('hidden')
 function show(view){['entry','dashboard','classroom'].forEach(id=>$(id).classList.toggle('hidden',id!==view));}
 function saveSession(){try{sessionStorage.setItem('kq-session',JSON.stringify({token:S.token,id:S.id,role:S.role,room:S.room?{code:S.room.code}:null,name:S.name,color:S.color}));}catch(e){}}
 function clearSession(){try{sessionStorage.removeItem('kq-session');}catch(e){}}
-function backendUrl(){let u=CFG.apiUrl;try{u=u||localStorage.getItem('kq-api-url');}catch(e){}return String(u||'').trim();}
+function backendUrl(){return String(CFG.apiUrl||'').trim();}
 function validBackend(u){return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(u);}
 async function request(action,extra={}){
  const payload={action,token:S.token,code:S.room?.code,id:S.id,role:S.role,...extra};
  if(LOCAL)return demoApi(payload);
- const url=backendUrl();if(!validBackend(url))throw new Error('Backend belum disambung. Isi URL /exec dalam config.js atau Sambungan backend.');
+ const url=backendUrl();if(!validBackend(url))throw new Error('Portal belum tersedia. Hubungi pengendali kelas.');
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),action==='uploadPdf'||action==='pdfData'?120000:40000);
  try{const response=await fetch(url,{method:'POST',mode:'cors',credentials:'omit',redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),signal:controller.signal});
-   if(!response.ok)throw new Error('Backend HTTP '+response.status+'. Semak deployment Execute as Me / Anyone.');
-   const content=await response.text();let r;try{r=JSON.parse(content);}catch(e){throw new Error('Backend tidak memulangkan JSON. Semak URL /exec, akses Anyone dan deploy versi terkini.');}
+   if(!response.ok)throw new Error('Perkhidmatan kelas tidak tersedia ('+response.status+'). Cuba semula atau hubungi pengendali kelas.');
+   const content=await response.text();let r;try{r=JSON.parse(content);}catch(e){throw new Error('Perkhidmatan kelas tidak dapat dibuka. Hubungi pengendali kelas.');}
    if(!r?.ok)throw new Error(r?.error||'Permintaan gagal.');return r.data;
  }catch(e){if(e.name==='AbortError')throw new Error('Sambungan mengambil terlalu lama. Semak rekod sebelum mengulang penghantaran.');
-   if(e instanceof TypeError)throw new Error('Tidak dapat menghubungi Apps Script. Semak akses Anyone, URL /exec, rangkaian dan polisi akaun.');throw e;
+   if(e instanceof TypeError)throw new Error('Tidak dapat menghubungi kelas. Semak internet dan cuba semula.');throw e;
  }finally{clearTimeout(timeout);}
 }
 async function busy(form,fn,errorId){const btns=[...form.querySelectorAll('button')];btns.forEach(b=>b.disabled=true);if(errorId)$(errorId).textContent='';
@@ -33,10 +33,10 @@ $('joinForm').onsubmit=e=>{e.preventDefault();busy(e.currentTarget,async()=>{
  const data=await request('join',{code:$('joinCode').value.toUpperCase().trim(),name:$('joinName').value,className:$('joinClass').value,color:S.color});
  S.role='student';S.token=data.token;S.id=data.id;S.name=data.name;S.color=data.color;startRoom(data.room);},'entryError');};
 $('loginForm').onsubmit=e=>{e.preventDefault();busy(e.currentTarget,async()=>{const d=await request('login',{email:$('teacherEmail').value.trim(),pin:$('teacherKey').value});S.token=d.token;S.role='teacher';S.room=null;S.id='teacher';$('teacherKey').value='';saveSession();renderDashboard(d.dashboard);show('dashboard');},'entryError');};
-$('logout').onclick=async()=>{try{await request('logout');}catch(e){toast('Log keluar tempatan. Sambungan backend: '+e.message);}finally{S.token='';S.room=null;clearSession();show('entry');switchEntry(true);}};
+$('logout').onclick=async()=>{try{await request('logout');}catch(e){toast('Log keluar pada peranti ini. '+e.message);}finally{S.token='';S.room=null;clearSession();show('entry');switchEntry(true);}};
 $('refreshDashboard').onclick=()=>busy($('dashboard'),async()=>renderDashboard(await request('dashboard')));
 $('createForm').onsubmit=e=>{e.preventDefault();busy(e.currentTarget,async()=>{const d=await request('create',{title:$('createTitle').value,className:$('createClass').value,teacher:$('createTeacher').value});S.role='teacher';S.id='teacher';S.name=d.room.teacher;startRoom(d.room);},'createError');};
-function renderDashboard(d){$('adminProfile').textContent='Superadmin · '+(d.profile?.email||'Pratonton');$('voiceConfigNotice').textContent=d.voiceConfigured?'Agora ditetapkan. Peserta boleh sambung suara dalam kelas.':'Suara belum aktif. Buka Tetapan dan isi maklumat Agora dahulu.';$('sheetLink').href=safeUrl(d.sheetUrl)||'#';$('sheetLink').classList.toggle('hidden',LOCAL);
+function renderDashboard(d){$('adminProfile').textContent='Superadmin · '+(d.profile?.email||'Pratonton');$('voiceConfigNotice').textContent=d.voiceConfigured?'Suara tersedia. Peserta boleh sambung suara dalam kelas.':'Suara belum tersedia. Hubungi pengendali kelas.';$('sheetLink').href=safeUrl(d.sheetUrl)||'#';$('sheetLink').classList.toggle('hidden',LOCAL);
  $('sessionList').innerHTML=d.rooms.length?d.rooms.slice().reverse().map(r=>`<article class="session-card"><div class="row between"><h3>${esc(r.title)}</h3><small>${r.closed?'Tamat':'Aktif'}</small></div><div class="row between"><div><div class="code">${esc(r.code)}</div><small>${esc(r.className)}</small></div><div class="row"><button class="small" data-report="${esc(r.code)}">Rekod</button>${r.closed?'':`<button class="small primary" data-enter="${esc(r.code)}">Masuk →</button>`}</div></div></article>`).join(''):'<p class="hint">Belum ada sesi. Cipta kelas pertama anda.</p>';
  $('sessionList').querySelectorAll('[data-enter]').forEach(b=>b.onclick=()=>busy($('dashboard'),async()=>{const d=await request('enterTeacher',{code:b.dataset.enter});S.id='teacher';S.name=d.room.teacher;startRoom(d.room);}));
  $('sessionList').querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>openReport(b.dataset.report));
@@ -184,7 +184,7 @@ async function demoApi(p){
  case 'join':if(!room||p.code!==room.code)throw new Error('Dalam pratonton, cipta sesi sebagai guru dahulu.');if(room.locked)throw new Error('Kelas dikunci.');DEMO.attendance.push({name:p.name,className:p.className,event:'Masuk',id:'demo-student',time:new Date().toISOString()});return {room:structuredClone(room),token:'demo-student',id:'demo-student',name:p.name,color:p.color};
  case 'sync':{if(room.closed)throw new Error('Sesi sudah tamat.');const students=[{id:'adam',name:'Adam',color:3,x:343,y:432,hand:false},{id:'aina',name:'Aina',color:2,x:600,y:555,hand:true},{id:'mikail',name:'Mikail',color:1,x:760,y:560,hand:false}].filter(x=>!DEMO.removed.has(x.id)).map((x,i)=>({...x,x:x.x+(room.freeze?0:Math.sin(Date.now()/1500+i)*8),role:'student',seen:Date.now()}));const me={id:p.id,name:who,color:S.color,role:p.role,x:p.x,y:p.y,hand:p.hand,reaction:p.reaction,reactionAt:p.reactionAt};return {room:structuredClone(room),players:[...students,me],messages:DEMO.messages.slice(),responses:DEMO.responses.slice(),roster:students.map(x=>({...x,className:room.className})),pollMs:1700};}
  case 'settings':Object.assign(room,Object.fromEntries(Object.entries(p).filter(([k])=>['board','closed','locked','freeze','chatEnabled','micsLocked'].includes(k))));if(p.closed)DEMO.rooms.forEach(r=>r.closed=true);return structuredClone(room);
- case 'voiceToken':throw new Error('Pratonton tiada panggilan suara. Pasang backend dan tetapkan Agora untuk ujian sebenar.');
+ case 'voiceToken':throw new Error('Pratonton tiada panggilan suara. Gunakan pautan portal untuk kelas sebenar.');
  case 'adminConfig':return {email:'demo@example.com',appId:'',certificateSet:false,frontendUrl:'',defaultPin:true};
  case 'saveConfig':case 'changePin':return {saved:true};
  case 'uploadPdf':DEMO.pdf={id:uid(),name:p.name,base64:p.base64,pages:p.pages};room.slides={id:DEMO.pdf.id,name:p.name,pages:p.pages,page:1,active:true,revision:Date.now()};return structuredClone(room);
