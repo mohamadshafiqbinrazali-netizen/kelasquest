@@ -5,7 +5,7 @@
  * App Certificate hanya dalam Code.gs peribadi, jangan letak di sini.
  */
 window.KQ_CONFIG={
-  apiUrl:'', // Tampal: https://script.google.com/macros/s/DEPLOYMENT_ID/exec
+  apiUrl:'https://script.google.com/macros/s/AKfycbzsfdncP0osd4AZTr5cLYAnWbU_R-sb0KBnbI5QKBEoPimtV6cUUfnOYGIHPRe8Jl_4/exec', // Tampal: https://script.google.com/macros/s/DEPLOYMENT_ID/exec
   demo:false,
   pollMs:6000
 };
